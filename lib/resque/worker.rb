@@ -38,9 +38,8 @@ module Resque
       reportedly_working = {}
 
       begin
-        reportedly_working = redis.mapped_mget(*names).reject do |key, value|
-          value.nil? || value.empty?
-        end
+        values = redis.mapped_mget(*names).reject {|v| v.nil? || v.empty? }
+        reportedly_working = Hash[*names.zip(values).flatten(1)]
       rescue Redis::Distributed::CannotDistribute
         names.each do |name|
           value = redis.get name
